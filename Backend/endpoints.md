@@ -59,7 +59,7 @@
     <h3> Output(s): </h3>
         <ul>
             <li> (Success) { "success" : token } </li>
-            <li> (Failure, Username incorrect) { "error" : "usernameIncorrect" } </li>
+            <li> (Failure, Token Not Found) { "error" : "tokenNotFound" } </li>
             <li> (Failure, Password incorrect) { "error" : "passwordIncorrect" } </li>
             <li> (Failure) { "error" : "requiredDataNotProvided" } </li>
         </ul>

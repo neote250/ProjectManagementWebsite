@@ -3,15 +3,17 @@ from Backend.MongoDAL import MongoDAL
 #todo: Add & document delete
 app = Flask(__name__)
 dal = MongoDAL()
+def checkForAttrubutes(keys, required):
+    for key in keys:
+        if key not in required:
+            return False
+    return True
+
 @app.route("/Register", methods=["POST"])
 def register():
     data = request.json
     keys = data.keys()
-    if "username" not in keys:
-        return jsonify({"error": "requiredDataNotProvided"})
-    if "password" not in keys:
-        return jsonify({"error": "requiredDataNotProvided"})
-    if "displayName" not in keys:
+    if checkForAttrubutes(keys, ["username", "password", "displayName"]):
         return jsonify({"error": "requiredDataNotProvided"})
     username = data["username"]
     password = data["password"]
@@ -22,9 +24,7 @@ def register():
 def login():
     data = request.json
     keys = data.keys()
-    if "username" not in keys:
-        return jsonify({"error": "requiredDataNotProvided"})
-    if "password" not in keys:
+    if checkForAttrubutes(keys, ["username", "password"]):
         return jsonify({"error": "requiredDataNotProvided"})
     username = data["username"]
     password = data["password"]
@@ -40,31 +40,45 @@ def refreshToken():
 
 @app.route("/ChangeUsername", methods=["POST"])
 def changeUsername():
-    response = {}
     data = request.json
-    #todo: implement
-    return jsonify(response)
+    keys = data.keys()
+    if checkForAttrubutes(keys, []):
+        return jsonify({"error": "requiredDataNotProvided"})
+    token = data["token"]
+    password = data["password"]
+    newUsername = data["newUsername"]
+    return dal.changeUsername(token , password, newUsername)
 
 @app.route("/ChangePassword", methods=["POST"])
 def changePassword():
-    response = {}
     data = request.json
-    #todo: implement
-    return jsonify(response)
+    keys = data.keys()
+    if checkForAttrubutes(keys, []):
+        return jsonify({"error": "requiredDataNotProvided"})
+    token = data["token"]
+    password = data["password"]
+    newPassword = data["newPassword"]
+    return dal.changePassword(token, password, newPassword)
 
 @app.route("/ChangeDisplayName", methods=["POST"])
 def changeDisplayName():
-    response = {}
     data = request.json
-    #todo: implement
-    return jsonify(response)
+    keys = data.keys()
+    if checkForAttrubutes(keys, []):
+        return jsonify({"error": "requiredDataNotProvided"})
+    token = data["token"]
+    password = data["password"]
+    newDisplayName = data["newDisplayName"]
+    return dal.changeDisplayName(token, password, newDisplayName)
 
 #@app.route("/", methods=["POST"])
 #def index():
-#    response = {}
-#    data = request.json
-#
-#    return jsonify(response)
+#data = request.json
+#    keys = data.keys()
+#    if checkForAttrubutes(keys, []):
+#        return jsonify({"error": "requiredDataNotProvided"})
+#    #todo: implement
+#   return
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)

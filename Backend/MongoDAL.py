@@ -103,11 +103,59 @@ class MongoDAL:
 
 
     #account modification
-    def changeUsername(self, token, newUsername):
-        raise NotImplementedError("Need to implement this") #todo: implement this
+    def changeUsername(self, token, password, newUsername):
+        """
+        Changes the username
+        :param token: The token of the user
+        :param password: The password of the user
+        :param newUsername: The new username
+        :return: error or token
+        """
+        userid = self.tokens.find_one({ "token": token })
+        if userid is None:
+            return {"error": "tokenNotFound"}
+        user = self.users.find_one({ "_id": userid.get("_id") })
+        if user is None:
+            return {"error": "tokenNotFound"}
+        if user.get("password") != hashlib.sha512(password.encode(),usedforsecurity=True).hexdigest():
+            return {"error": "passwordIncorrect"}
+        self.users.update_one({ "_id": user.get("_id")}, {"$set": { "username": newUsername }})
+        return self.tokenFromUserID(userid.get("_id"))
 
-    def changePassword(self, token, newPassword):
-        raise NotImplementedError("Need to implement this") #todo: implement this
+    def changePassword(self, token, password, newPassword):
+        """
+        Changes the password
+        :param token: The token of the user
+        :param password: The password of the user
+        :param newPassword: The new password of the user
+        :return: error or token
+        """
+        userid = self.tokens.find_one({"token": token})
+        if userid is None:
+            return {"error": "tokenNotFound"}
+        user = self.users.find_one({"_id": userid.get("_id")})
+        if user is None:
+            return {"error": "tokenNotFound"}
+        if user.get("password") != hashlib.sha512(password.encode(), usedforsecurity=True).hexdigest():
+            return {"error": "passwordIncorrect"}
+        self.users.update_one({"_id": user.get("_id")}, {"$set": {"password": hashlib.sha512(newPassword.encode(), usedforsecurity=True).hexdigest()}})
+        return self.tokenFromUserID(userid.get("_id"))
 
-    def changeDisplayName(self, token, newDisplayName):
-        raise NotImplementedError("Need to implement this") #todo: implement this
+    def changeDisplayName(self, token, password, newDisplayName):
+        """
+        Changes the display name
+        :param token: The token of the user
+        :param password: The password of the user
+        :param newDisplayName: The new display name of the user
+        :return: error or token
+        """
+        userid = self.tokens.find_one({"token": token})
+        if userid is None:
+            return {"error": "tokenNotFound"}
+        user = self.users.find_one({"_id": userid.get("_id")})
+        if user is None:
+            return {"error": "tokenNotFound"}
+        if user.get("password") != hashlib.sha512(password.encode(), usedforsecurity=True).hexdigest():
+            return {"error": "passwordIncorrect"}
+        self.users.update_one({"_id": user.get("_id")}, {"$set": {"displayName": newDisplayName}})
+        return self.tokenFromUserID(userid.get("_id"))
