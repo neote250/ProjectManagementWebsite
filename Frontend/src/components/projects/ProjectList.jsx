@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { LayoutGrid, List } from "lucide-react";
 
-const ProjectList = () => {
+const ProjectList = ({ onSelectProject }) => {  // ✅ Updated prop name
     const [projects, setProjects] = useState([]);
-    const [isGridView, setIsGridView] = useState(true); // Toggle state
+    const [isGridView, setIsGridView] = useState(true);
 
     const handleCreateProject = () => {
         const newProject = {
@@ -42,7 +42,8 @@ const ProjectList = () => {
                     projects.map((project) => (
                         <div
                             key={project.id}
-                            className={`border border-gray-300 bg-white rounded-lg p-5 shadow-md hover:shadow-lg transition-shadow ${
+                            onClick={() => onSelectProject && onSelectProject(project)} // ✅ Updated
+                            className={`border border-gray-300 bg-white rounded-lg p-5 shadow-md hover:shadow-lg transition-shadow cursor-pointer ${
                                 isGridView ? "" : "flex items-center space-x-4"
                             }`}
                         >
