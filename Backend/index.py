@@ -1,84 +1,168 @@
 from flask import Flask, jsonify, request
 from Backend.MongoDAL import MongoDAL
-#todo: Add & document delete
 app = Flask(__name__)
 dal = MongoDAL()
+
 def checkForAttrubutes(keys, required):
     for key in keys:
         if key not in required:
             return False
     return True
 
-@app.route("/Register", methods=["POST"])
-def register():
+#todo write tests (make nephi do this)
+
+#todo make json values case-insensitive
+
+"""
+/get/userdata
+/get/tasks
+/get/documents
+/get/timeline
+/get/team members
+/get/users
+
+/create/team
+/create/task
+/create/document
+
+/update/team/*
+/update/task/*
+/update/document/*
+
+/delete/team
+/delete/task
+/delete/document
+"""
+
+
+#todo add projects & document schema
+    #todo add tasks with timeframes attached & document schema
+
+#todo groundwork for comment system
+
+#todo shoehorn ai
+
+@app.route("/create/<Object>", methods=["POST"])
+def create(Object):
+    #data from the request
     data = request.json
     keys = data.keys()
-    if checkForAttrubutes(keys, ["username", "password", "displayName"]):
-        return jsonify({"error": "requiredDataNotProvided"})
-    username = data["username"]
-    password = data["password"]
-    displayName = data["displayName"]
-    return dal.newUser(username, password, displayName)
+    match(Object.upper()):
+        case "USER":
+            if checkForAttrubutes(keys, ["username", "password", "displayName"]):
+                return jsonify({"error": "requiredDataNotProvided"})
+            username = data["username"]
+            password = data["password"]
+            displayName = data["displayName"]
+            return dal.newUser(username, password, displayName)
+        case "TOKEN":
+            if "username" not in keys:
+                return jsonify({"error": "\"username\" not provided"})
+            if "password" not in keys:
+                return jsonify({"error": "\"password\" not provided"})
+            username = data["username"]
+            password = data["password"]
+            return dal.login(username, password)
+        case "TEAM":
+            pass
+        case "PROJECT":
+            pass
+        case "TASK":
+            pass
+        case "COMMENTS":
+            pass
+        case "DOCUMENTS":
+            pass
+    return {"error": f"Endpoint {Object} not found."}
 
-@app.route("/Login", methods=["POST"])
-def login():
+@app.route("/get/<Object>", methods=["POST"])
+def get(Object):
     data = request.json
     keys = data.keys()
-    if checkForAttrubutes(keys, ["username", "password"]):
-        return jsonify({"error": "requiredDataNotProvided"})
-    username = data["username"]
-    password = data["password"]
-    return dal.login(username, password)
+    match(Object.upper()):
+        case "USER":
+            if "token" not in keys:
+                return {"error": "\"token\" not provided"}
+            return dal.getUser(data["token"])
+        case "TOKEN":
+            if "token" not in keys:
+                return {"error": "\"token\" not provided."}
+            return dal.tokenFromToken(data["token"])
+        case "TEAM":
+            pass
+        case "PROJECT":
+            pass
+        case "TASK":
+            pass
+        case "COMMENTS":
+            pass
+        case "DOCUMENTS":
+            pass
 
-@app.route("/RefreshToken", methods=["POST"])
-def refreshToken():
+
+    return {"error": f"Endpoint {Object} not found."}
+
+@app.route("/update/<Object>/<Field>", methods=["POST"])
+def update(Object, Field):
     data = request.json
     keys = data.keys()
-    if "token" not in keys:
-        return jsonify({"error": "requiredDataNotProvided"})
-    return dal.tokenFromToken(data["token"])
+    match(Object.upper()):
+        case "USER":
+            if "token" not in keys:
+                return {"error": "\"token\" not provided."}
+            if "password" not in keys:
+                return {"error": "\"password\" not provided."}
+            token = data["token"]
+            password = data["password"]
+            match(Field.upper()):
+                case "USERNAME":
+                    if "newusername" not in keys:
+                        return {"error": "\"newusername\" not provided"}
+                    return dal.changeUsername(token, password, data["newusername"])
+                case "PASSWORD":
+                    if "newpassword" not in keys:
+                        return {"error": "\"newpassword\" not provided"}
+                    return dal.changePassword(token, password, data["newpassword"])
+                case "DISPLAYNAME":
+                    if "newdisplayname" not in keys:
+                        return {"error": "\"newdisplayname\" not provided"}
+                    return dal.changeDisplayName(token, data["newdisplayname"])
+        case "TEAM":
+            pass
+        case "PROJECT":
+            pass
+        case "TASK":
+            pass
+        case "COMMENTS":
+            pass
+        case "DOCUMENTS":
+            pass
 
-@app.route("/ChangeUsername", methods=["POST"])
-def changeUsername():
+
+    return {"error": f"Endpoint {Object} not found."}
+
+@app.route("/delete/<Object>", methods=["POST"])
+def delete(Object):
     data = request.json
     keys = data.keys()
-    if checkForAttrubutes(keys, []):
-        return jsonify({"error": "requiredDataNotProvided"})
-    token = data["token"]
-    password = data["password"]
-    newUsername = data["newUsername"]
-    return dal.changeUsername(token , password, newUsername)
-
-@app.route("/ChangePassword", methods=["POST"])
-def changePassword():
-    data = request.json
-    keys = data.keys()
-    if checkForAttrubutes(keys, []):
-        return jsonify({"error": "requiredDataNotProvided"})
-    token = data["token"]
-    password = data["password"]
-    newPassword = data["newPassword"]
-    return dal.changePassword(token, password, newPassword)
-
-@app.route("/ChangeDisplayName", methods=["POST"])
-def changeDisplayName():
-    data = request.json
-    keys = data.keys()
-    if checkForAttrubutes(keys, []):
-        return jsonify({"error": "requiredDataNotProvided"})
-    token = data["token"]
-    password = data["password"]
-    newDisplayName = data["newDisplayName"]
-    return dal.changeDisplayName(token, password, newDisplayName)
-
-#@app.route("/", methods=["POST"])
-#def index():
-#data = request.json
-#    keys = data.keys()
-#    if checkForAttrubutes(keys, []):
-#        return jsonify({"error": "requiredDataNotProvided"})
-#    #todo: implement
-#   return
+    match(Object.upper()):
+        case "USER":
+            if "token" not in keys:
+                return {"error": "\"token\" not provided."}
+            if "password" not in keys:
+                return {"error": "\"password\" not provided."}
+            return dal.deleteUser(data["token"], data["password"])
+        case "TEAM":
+            pass
+        case "PROJECT":
+            pass
+        case "TASK":
+            pass
+        case "COMMENTS":
+            pass
+        case "DOCUMENTS":
+            pass
+    return {"error": f"Endpoint {Object} not found."}
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
