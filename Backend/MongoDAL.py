@@ -1,4 +1,4 @@
-import string, pymongo, hashlib, random, Settings
+import pymongo, hashlib, random, Settings
 
 class MongoDAL:
     def __init__(self):
@@ -13,72 +13,55 @@ class MongoDAL:
         self.logs = self.database.get_collection("logs") #todo: implement logging
         self.counters = self.database.get_collection("counters")
 
-    #auth
-    def login(self, username, password):
-        """
-        Logs in a user, returning the token
-        :param username: Username to login
-        :param password: Password to login (plaintext)
-        :return: Token or Error if login fails
-        """
-        user = self.users.find_one({ "username": username })
-        if user is None:
-            return {"error": "usernameIncorrect"}
-        if user.get("password") != hashlib.sha512(password.encode(),usedforsecurity=True).hexdigest():
-            return {"error": "passwordIncorrect"}
-        token = self.tokenFromUserID(user.get("_id"))
-        return {"token": token}
-    def tokenFromToken(self, token):
-        """
-        Regenerates a new token, using the old one
-        :param token: old token
-        :return: new token
-        """
-        tokenquerry = self.tokens.find_one({ "token": token })
-        if tokenquerry is None:
-            return {"error": "tokenNotFound"}
-        self.tokens.delete_one({ "token": token })
-        newtoken = self.tokenFromUserID(tokenquerry.get("_id"))
-        return {"token":newtoken}
-    def tokenFromUserID(self, userID):
+    # helper functions
+
+    def newToken(self, userID):
         """
         Creates a new token from a userID
         :param userID: the id of the user
         :return: error or token
         """
+
+        #Check if the user exists
         if self.users.find_one({ "_id": userID }) is None:
             return {"error": "userNotFound"}
+
+        #Delete any existing tokens for the user
         if self.tokens.find_one({ "_id": userID }) is not None:
             self.tokens.delete_one({ "_id": userID })
+
+        #Generate new token
         generating = True
         token = ""
         while generating:
             token = ""
+
+            #Randomly generate a token
             for x in range(0, self.tokenLen):
                 token += random.choice(self.tokenchars)
+
+            #Make sure the token doesn't exist already
             if self.tokens.find_one({"token": token}) is None:
                 self.tokens.insert_one({"_id":userID,"token": token})
                 generating = False
+
+        #return generated token
         return token
 
-    #user stuff
-    def newUser(self, username, password, displayName):
-        """
-        Registers a new user
-        :param username: username to register
-        :param password: password to register (plaintext)
-        :param displayName: display name to register
-        :return: error or token for the new user
-        """
-        user = self.users.find_one({ "username": username })
-        if user is not None:
-            return {"error": "usernameExists"}
-        user = self.users.insert_one(
-            {"username": username,
-             "password": hashlib.sha512(password.encode(),usedforsecurity=True).hexdigest(),
-             "displayName": displayName})
-        token = self.tokenFromUserID(user.inserted_id)
-        return {"token": token}
+    def refreshToken(self,token):
+        '''
+        Refresh token
+        :param token: old token
+        :return: new token or "token not found"
+        '''
+        #Look for token
+        tokenquerry = self.tokens.find_one({"token": token})
+        if tokenquerry is None:
+            return "token not found"
+        self.tokens.delete_one({"token": token})
+        newtoken = self.newToken(tokenquerry.get("_id"))
+        return newtoken
+
     def getUser(self, token):
         """
         Retrieves a user
@@ -94,6 +77,112 @@ class MongoDAL:
         user = dict(user)
         user.pop("password", None)
         return dict(user)
+
+    #crud functions
+
+    def create(self, Object, data):
+        match Object:
+            case "USER":
+                #Check if the username is already used
+                user = self.users.find_one({"username": data["USERNAME"]})
+                if user is not None:
+                    return {"error": "usernameExists"}
+
+                #Insert to the database
+                #TODO update the user fields
+                user = self.users.insert_one(
+                    {
+                        "username": data["USERNAME"],
+                        "password": hashlib.sha512(data["PASSWORD"].encode(), usedforsecurity=True).hexdigest(),
+                        "displayName": data["DISPLAYNAME"],
+
+                    })
+
+                #Generate a token, and return it
+                token = self.newToken(user.inserted_id)
+                return {"token": token}
+            case "TOKEN":
+                #Check if the username exists
+                user = self.users.find_one({"username": data["USERNAME"]})
+                if user is None:
+                    return {"error": "usernameIncorrect"}
+
+                #Check the password hash
+                if user.get("password") != hashlib.sha512(data["PASSWORD"].encode(), usedforsecurity=True).hexdigest():
+                    return {"error": "passwordIncorrect"}
+
+                #Generate a new token
+                token = self.newToken(user.get("_id"))
+                return {"token": token}
+            #TODO implement from here
+            case "TEAM":
+                return
+            case "PROJECT":
+                return
+            case "TASK":
+                return
+            case "COMMENT":
+                return
+            case "DOCUMENT":
+                return
+        return {"error": "Something went wrong"}
+
+    def get(self, Object, data):
+        match Object:
+            #todo implement from here
+            case "USER":
+                return
+            case "TOKEN":
+                return
+            case "TEAM":
+                return
+            case "PROJECT":
+                return
+            case "TASK":
+                return
+            case "COMMENT":
+                return
+            case "DOCUMENT":
+                return
+        return {"error": "Something went wrong"}
+
+    def update(self, Object, field, data):
+        match Object:
+            #todo implement from here
+            case "USER":
+                return
+            case "TEAM":
+                return
+            case "PROJECT":
+                return
+            case "TASK":
+                return
+            case "COMMENT":
+                return
+            case "DOCUMENT":
+                return
+        return {"error": "Something went wrong"}
+
+    def delete(self, Object, data):
+        match Object:
+            #todo implement from here
+            case "USER":
+                return
+            case "TEAM":
+                return
+            case "PROJECT":
+                return
+            case "TASK":
+                return
+            case "COMMENT":
+                return
+            case "DOCUMENT":
+                return
+        return {"error": "Something went wrong"}
+
+
+
+
     def changeUsername(self, token, password, newUsername):
         """
         Changes the username
@@ -111,7 +200,7 @@ class MongoDAL:
         if user.get("password") != hashlib.sha512(password.encode(),usedforsecurity=True).hexdigest():
             return {"error": "passwordIncorrect"}
         self.users.update_one({ "_id": user.get("_id")}, {"$set": { "username": newUsername }})
-        return self.tokenFromUserID(userid.get("_id"))
+        return self.newToken(userid.get("_id"))
     def changePassword(self, token, password, newPassword):
         """
         Changes the password
@@ -129,7 +218,7 @@ class MongoDAL:
         if user.get("password") != hashlib.sha512(password.encode(), usedforsecurity=True).hexdigest():
             return {"error": "passwordIncorrect"}
         self.users.update_one({"_id": user.get("_id")}, {"$set": {"password": hashlib.sha512(newPassword.encode(), usedforsecurity=True).hexdigest()}})
-        return self.tokenFromUserID(userid.get("_id"))
+        return self.newToken(userid.get("_id"))
     def changeDisplayName(self, token, password, newDisplayName):
         """
         Changes the display name
@@ -147,7 +236,7 @@ class MongoDAL:
         if user.get("password") != hashlib.sha512(password.encode(), usedforsecurity=True).hexdigest():
             return {"error": "passwordIncorrect"}
         self.users.update_one({"_id": user.get("_id")}, {"$set": {"displayName": newDisplayName}})
-        return self.tokenFromUserID(userid.get("_id"))
+        return self.newToken(userid.get("_id"))
     def deleteUser(self, token, password):
         userfromtoken = self.tokens.find_one({ "token": token })
         if userfromtoken is None:
@@ -159,35 +248,3 @@ class MongoDAL:
             return {"error": "Password incorrect"}
         self.users.delete_one({"_id": user.get("_id")})
         return {"sucess": True}
-
-    #project stuff
-    def createTeam(self, data):
-        NotImplementedError()
-    def modifyTeam(self, data):
-        NotImplementedError()
-    def deleteTeam(self, data):
-        NotImplementedError()
-
-    def createProject(self, data):
-        NotImplementedError()
-    def modifyProject(self, data):
-        NotImplementedError()
-    def deleteProject(self, data):
-        NotImplementedError()
-
-    def createTask(self, data):
-        NotImplementedError()
-    def modifyTask(self, data):
-        NotImplementedError()
-    def deleteTask(self, data):
-        NotImplementedError()
-
-    def addDocument(self, data):
-        NotImplementedError()
-    def deleteDocument(self, data):
-        NotImplementedError()
-
-    def createComment(self, data):
-        NotImplementedError()
-    def deleteComment(self, data):
-        NotImplementedError()
