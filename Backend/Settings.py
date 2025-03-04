@@ -9,6 +9,71 @@ tokenLength = 128
 #the big kahuna
 databaseSchema = {
     "USER": {
+        "createFields": ["USERNAME","PASSWORD","DISPLAYNAME"], #index
+
+        "requiredGetFields": ["TOKEN"], #index
+        "getFields": ["_id","USERNAME","DISPLAYNAME","TEAMS"], #dal
+
+        "requiredUpdateFields": ["TOKEN","PASSWORD"], #index
+        "updateFields": ["USERNAME","DISPLAYNAME","PASSWORD","ADDTOTEAM","REMOVEFROMTEAM"], #index
+
+        "requiredDeleteFields": ["TOKEN","PASSWORD"], #index
+
+        "allFields":["USERNAME","PASSWORD","DISPLAYNAME","TEAMS"] #dal
+    },
+    "TEAM": {
+        "createFields": ["NAME","DESCRIPTION","TOKEN"],  # index
+
+        "requiredGetFields": ["TOKEN","TEAMID"],  # index
+        "getFields": ["NAME","DESCRIPTION","MEMBERS","ADMINS","PROJECTS"],  # dal
+
+        "requiredUpdateFields": ["TOKEN","ID"],  # index
+        "updateFields": ["ADDADMIN","ADDUSER","REMOVEADMIN","REMOVEUSER","NAME","DESCRIPTION","ADDPROJECT","REMOVEPROJECT"],  # index
+
+        "requiredDeleteFields": ["TOKEN","ID","PASSWORD"],  # index
+
+        "allFields": ["NAME","DESCRIPTION","MEMBERS","ADMINS","PROJECTS"]  # dal
+    },
+    "PROJECT": {
+        "createFields": ["NAME","DESCRIPTION","TOKEN","TEAMID"], #index
+
+        "requiredGetFields": ["TOKEN","PROJECTID"], #index
+        "getFields": ["NAME","DESCRIPTION","DOCUMENTS","TASKS","TEAMID"], #dal
+
+        "requiredUpdateFields": ["TOKEN"], #index
+        "updateFields": ["ADDDOCUMENT","REMOVEDOCUMENT","NAME","DESCRIPTION"], #index
+
+        "requiredDeleteFields": ["TOKEN","PASSWORD"], #index
+
+        "allFields":["NAME","DESCRIPTION","TEAM","DOCUMENTS","TASKS"] #dal
+    },
+    "TASK": {
+        "createFields": ["NAME","DESCRIPTION","PROJECTID","TOKEN"], #index
+
+        "requiredGetFields": ["TOKEN"], #index
+        "getFields": ["NAME","DESCRIPTION","PROJECTID","PRIORITY","STATUS","COMPLETIONTIME","USERSASSIGNED"], #dal
+
+        "requiredUpdateFields": ["TOKEN","TASKID"], #index
+        "updateFields": ["NAME","DESCRIPTION","PRIORITY","STATUS","ADDUSER","REMOVEUSER","COMPLETIONTIME"], #index
+
+        "requiredDeleteFields": ["TOKEN"], #index
+
+        "allFields":["NAME","DESCRIPTION","PROJECTID","PRIORITY","STATUS","COMPLETIONTIME","USERSASSIGNED"] #dal
+    },
+    "COMMENT": {
+        "createFields": ["TEXT","TEAMID","TOKEN"], #index
+
+        "requiredGetFields": ["TEAMID","TOKEN"], #index
+        "getFields": ["TEXT","AUTHOR","CREATED","COMMENTID","TEAMID"], #dal
+
+        "requiredUpdateFields": [], #index #TODO edit comment?
+        "updateFields": [], #index
+
+        "requiredDeleteFields": ["TOKEN","COMMENTID"], #index
+
+        "allFields":[] #dal
+    },
+    "DOCUMENT": { #todo figure out what im doing here
         "createFields": [], #index
 
         "requiredGetFields": [], #index
@@ -19,53 +84,24 @@ databaseSchema = {
 
         "requiredDeleteFields": [], #index
 
-        "allFields":[] #nowhere
+        "allFields":[] #dal
     },
-    "TEAM": {
-        "log": True,
-        "createFields": ["NAME","DESCRIPTION","ADMIN"],
-        "changeableFields": ["MEMBER","ADMIN"],
-        "getFields": ["NAME","DESCRIPTION","MEMBER","ADMIN"],
-    },
-    "PROJECT": {
-        "log": True,
-        "createFields": ["NAME","DESCRIPTION","TEAM"],
-
-        "requiredFields": [],
-        "changeableFields": ["NAME","DESCRIPTION","TEAM","DOCUMENT"],
-        "getFields": ["NAME","DESCRIPTION","TEAM","DOCUMENT"],
-    },
-    "TASK": {
-        "log": True,
-        "createFields": ["NAME","DESCRIPTION","PROJECT","PRIORITY","STATUS","COMPLETIONTIME"],
-
-        "requiredFields": [],
-        "changeableFields": ["NAME","DESCRIPTION","PRIORITY","STATUS","COMPLETIONTIME"],
-        "getFields": ["NAME","DESCRIPTION","PROJECT","PRIORITY","STATUS","COMPLETIONTIME"],
-    },
-    "COMMENT": {
-        "log": True,
-        "createFields": ["TEAMID","TEXT","AUTHOR","CREATED"],
-
-        "requiredFields": [],
-        "changeableFields": ["TEXT"],
-        "getFields": ["TEAMID","TEXT","AUTHOR","CREATED"],
-    },
-    "DOCUMENT": {
-        "log": True,
-        "createFields": ["FILENAME","DATA"],
-
-        "requiredFields": [],
-        "changeableFields": [],
-        "getFields": ["FILENAME","DATA"],
+    "TOKEN":{
+        "createFields":["USERNAME","PASSWORD"],
+        "requiredGetFields":["TOKEN"]
     },
     "name": {
-        "log": True,
-        "createFields": [],
+        "createFields": [], #index
 
-        "requiredFields": [],
-        "changeableFields": [],
-        "getFields": [],
+        "requiredGetFields": [], #index
+        "getFields": [], #dal
+
+        "requiredUpdateFields": [], #index
+        "updateFields": [], #index
+
+        "requiredDeleteFields": [], #index
+
+        "allFields":[] #dal
     }
 }
 

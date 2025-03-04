@@ -1,5 +1,5 @@
 import pymongo, hashlib, random, Settings
-
+dbs = Settings.databaseSchema
 class MongoDAL:
     def __init__(self):
         mongo = pymongo.MongoClient(Settings.mongoConnectionString)
@@ -41,8 +41,8 @@ class MongoDAL:
                 token += random.choice(self.tokenchars)
 
             #Make sure the token doesn't exist already
-            if self.tokens.find_one({"token": token}) is None:
-                self.tokens.insert_one({"_id":userID,"token": token})
+            if self.tokens.find_one({"TOKEN": token}) is None:
+                self.tokens.insert_one({"_id":userID,"TOKEN": token})
                 generating = False
 
         #return generated token
@@ -55,10 +55,10 @@ class MongoDAL:
         :return: new token or "token not found"
         '''
         #Look for token
-        tokenquerry = self.tokens.find_one({"token": token})
+        tokenquerry = self.tokens.find_one({"TOKEN": token})
         if tokenquerry is None:
             return "token not found"
-        self.tokens.delete_one({"token": token})
+        self.tokens.delete_one({"TOKEN": token})
         newtoken = self.newToken(tokenquerry.get("_id"))
         return newtoken
 
@@ -68,7 +68,7 @@ class MongoDAL:
         :param token: the user's session token
         :return: The user entry, without the password hash
         """
-        tokenquerry = self.tokens.find_one({ "token": token })
+        tokenquerry = self.tokens.find_one({ "TOKEN": token })
         if tokenquerry is None:
             return {"error": "tokenNotFound"}
         user = self.users.find_one({ "_id": tokenquerry.get("_id")})
@@ -84,7 +84,7 @@ class MongoDAL:
         match Object:
             case "USER":
                 #Check if the username is already used
-                user = self.users.find_one({"username": data["USERNAME"]})
+                user = self.users.find_one({"USERNAME": data["USERNAME"]})
                 if user is not None:
                     return {"error": "usernameExists"}
 
@@ -92,9 +92,9 @@ class MongoDAL:
                 #TODO update the user fields
                 user = self.users.insert_one(
                     {
-                        "username": data["USERNAME"],
-                        "password": hashlib.sha512(data["PASSWORD"].encode(), usedforsecurity=True).hexdigest(),
-                        "displayName": data["DISPLAYNAME"],
+                        "USERNAME": data["USERNAME"],
+                        "PASSWORD": hashlib.sha512(data["PASSWORD"].encode(), usedforsecurity=True).hexdigest(),
+                        "DISPLAYNAME": data["DISPLAYNAME"],
 
                     })
 
@@ -103,12 +103,12 @@ class MongoDAL:
                 return {"token": token}
             case "TOKEN":
                 #Check if the username exists
-                user = self.users.find_one({"username": data["USERNAME"]})
+                user = self.users.find_one({"USERNAME": data["USERNAME"]})
                 if user is None:
                     return {"error": "usernameIncorrect"}
 
                 #Check the password hash
-                if user.get("password") != hashlib.sha512(data["PASSWORD"].encode(), usedforsecurity=True).hexdigest():
+                if user.get("PASSWORD") != hashlib.sha512(data["PASSWORD"].encode(), usedforsecurity=True).hexdigest():
                     return {"error": "passwordIncorrect"}
 
                 #Generate a new token
@@ -131,9 +131,20 @@ class MongoDAL:
         match Object:
             #todo implement from here
             case "USER":
-                return
+                token = self.tokens.find_one({"TOKEN": data["TOKEN"]})
+                if token is None:
+                    return {"error": "tokenNotFound"}
+                user = self.users.find_one({"_id": token.get("_id")})
+                if user is None:
+                    return {"error": "userNotFound"}
+                user = dict(user)
+                returndict = {}
+                for key in Settings.databaseSchema[Object]["getFields"]:
+                    if key in user.keys():
+                        returndict[key] = str(user[key])
+                return returndict
             case "TOKEN":
-                return
+                return {"TOKEN":self.refreshToken(data["TOKEN"])}
             case "TEAM":
                 return
             case "PROJECT":
@@ -150,6 +161,7 @@ class MongoDAL:
         match Object:
             #todo implement from here
             case "USER":
+
                 return
             case "TEAM":
                 return
@@ -167,6 +179,7 @@ class MongoDAL:
         match Object:
             #todo implement from here
             case "USER":
+
                 return
             case "TEAM":
                 return
@@ -191,13 +204,13 @@ class MongoDAL:
         :param newUsername: The new username
         :return: error or token
         """
-        userid = self.tokens.find_one({ "token": token })
+        userid = self.tokens.find_one({ "TOKEN": token })
         if userid is None:
             return {"error": "tokenNotFound"}
         user = self.users.find_one({ "_id": userid.get("_id") })
         if user is None:
             return {"error": "tokenNotFound"}
-        if user.get("password") != hashlib.sha512(password.encode(),usedforsecurity=True).hexdigest():
+        if user.get("PASSWORD") != hashlib.sha512(password.encode(),usedforsecurity=True).hexdigest():
             return {"error": "passwordIncorrect"}
         self.users.update_one({ "_id": user.get("_id")}, {"$set": { "username": newUsername }})
         return self.newToken(userid.get("_id"))

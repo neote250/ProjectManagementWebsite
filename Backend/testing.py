@@ -1,28 +1,23 @@
-import MongoDAL
-dal = MongoDAL.MongoDAL()
-
-#Add a new user
-newuser = dal.newUser("tim","tim123","Tim Tom")
-print(f"New User's Token: {newuser.get("token")}")
-
-#Find the user from the token
-user = dal.getUser(newuser.get("token"))
-print(f"User found from token: {user}")
-
-#Pause to probe the database
-input("Press enter to continue...")
-
-#Log in to the new user, changing the token
-login = dal.login("tim","tim123")
-print(f"New Token from login {login.get('token')}")
-
-#Use the new token to find the user
-user = dal.getUser(login.get("token"))
-print(f"User found from new Token: {user}")
-
-#Regenerate the token
-newusertoken = dal.tokenFromToken(login.get("token"))
-print(f"New Token from token {newusertoken}")
+import requests
+from psutil import users
 
 
+def usetheapi(endpoint, json):
+    with requests.post("http://127.0.0.1:5000"+endpoint, json=json) as response:
+        return response.json()
 
+#Create a user
+use = usetheapi("/create/user",{"username":"hi","password":"fuck","displayname":"grah","bleh":"heh"})
+print(f"New User: {use}")
+
+#Check to see if it was stored properly
+user = usetheapi("/get/user",{"token":use.get("token")})
+print(f"Retreived User: {user}")
+
+#Refresh the token
+newtoken = usetheapi("/get/token",{"token":use.get("token")})
+print(f"New Token: {newtoken}")
+
+#Log back in
+newnewtoken = usetheapi("/create/token",{"username":"hi","password":"fuck"})
+print(f"New New Token: {newnewtoken}")

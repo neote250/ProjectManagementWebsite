@@ -5,7 +5,7 @@ app = Flask(__name__)
 dal = MongoDAL()
 dbs = Settings.databaseSchema
 
-def checkForAttrubutes(keys, required):
+def checkForAttrubutes(required, keys):
     for key in keys:
         if key not in required:
             return False
@@ -21,8 +21,6 @@ def uppercaseDataAndKeys(data):
 
 #todo add projects & document schema
     #todo add tasks with timeframes attached & document schema
-
-#todo groundwork for comment system
 
 #todo shoehorn ai
 
@@ -56,7 +54,6 @@ def get(Object):
     #Check for required fields
     if not checkForAttrubutes(keys, dbs[obj]["requiredGetFields"]):
         return {"error": f"{dbs[obj]["requiredGetFields"]} are all required to fetch from a(n) {Object}."}
-
     #Send data to the DAL
     return dal.get(obj, data)
 
