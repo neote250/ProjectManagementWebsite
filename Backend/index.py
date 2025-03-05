@@ -1,70 +1,98 @@
 from flask import Flask, jsonify, request
 from Backend.MongoDAL import MongoDAL
-#todo: Add & document delete
+import Settings
 app = Flask(__name__)
 dal = MongoDAL()
-@app.route("/Register", methods=["POST"])
-def register():
-    data = request.json
-    keys = data.keys()
-    if "username" not in keys:
-        return jsonify({"error": "requiredDataNotProvided"})
-    if "password" not in keys:
-        return jsonify({"error": "requiredDataNotProvided"})
-    if "displayName" not in keys:
-        return jsonify({"error": "requiredDataNotProvided"})
-    username = data["username"]
-    password = data["password"]
-    displayName = data["displayName"]
-    return dal.newUser(username, password, displayName)
+dbs = Settings.databaseSchema
 
-@app.route("/Login", methods=["POST"])
-def login():
-    data = request.json
-    keys = data.keys()
-    if "username" not in keys:
-        return jsonify({"error": "requiredDataNotProvided"})
-    if "password" not in keys:
-        return jsonify({"error": "requiredDataNotProvided"})
-    username = data["username"]
-    password = data["password"]
-    return dal.login(username, password)
+def checkForAttrubutes(required, keys):
+    for key in keys:
+        if key not in required:
+            return False
+    return True
 
-@app.route("/RefreshToken", methods=["POST"])
-def refreshToken():
-    data = request.json
-    keys = data.keys()
-    if "token" not in keys:
-        return jsonify({"error": "requiredDataNotProvided"})
-    return dal.tokenFromToken(data["token"])
+def uppercaseDataAndKeys(data):
+    uppercasedata = {}
+    for key in data.keys():
+        uppercasedata[key.upper()] = data[key]
+    return uppercasedata, uppercasedata.keys()
 
-@app.route("/ChangeUsername", methods=["POST"])
-def changeUsername():
-    response = {}
-    data = request.json
-    #todo: implement
-    return jsonify(response)
+#todo write tests (make nephi do this)
 
-@app.route("/ChangePassword", methods=["POST"])
-def changePassword():
-    response = {}
-    data = request.json
-    #todo: implement
-    return jsonify(response)
+#todo add projects & document schema
+    #todo add tasks with timeframes attached & document schema
 
-@app.route("/ChangeDisplayName", methods=["POST"])
-def changeDisplayName():
-    response = {}
-    data = request.json
-    #todo: implement
-    return jsonify(response)
+#todo shoehorn ai
 
-#@app.route("/", methods=["POST"])
-#def index():
-#    response = {}
-#    data = request.json
-#
-#    return jsonify(response)
+@app.route("/create/<Object>", methods=["POST"])
+def create(Object):
+    # data from the request
+    data, keys = uppercaseDataAndKeys(request.json)
+    obj = Object.upper()
+
+    #Check the database schema for the endpoint
+    if obj not in dbs.keys():
+        return {"error": f"Endpoint /create/{Object} not found."}
+
+    #Check for required fields
+    if not checkForAttrubutes(keys, dbs[obj]["createFields"]):
+        return {"error": f"{dbs[obj]['createFields']} are all required to create a(n) {Object}."}
+
+    #Send data to the DAL
+    return dal.create(obj, data)
+
+@app.route("/get/<Object>", methods=["POST"]) #Done
+def get(Object):
+    # data from the request
+    data, keys = uppercaseDataAndKeys(request.json)
+    obj = Object.upper()
+
+    #Check the schema for the endpoint
+    if obj not in dbs.keys():
+        return {"error": f"Endpoint /get/{Object} not found."}
+
+    #Check for required fields
+    if not checkForAttrubutes(keys, dbs[obj]["requiredGetFields"]):
+        return {"error": f"{dbs[obj]["requiredGetFields"]} are all required to fetch from a(n) {Object}."}
+    #Send data to the DAL
+    return dal.get(obj, data)
+
+@app.route("/update/<Object>/<Field>", methods=["POST"])
+def update(Object, Field):
+    # data from the request
+    data, keys = uppercaseDataAndKeys(request.json)
+    obj = Object.upper()
+    field = Field.upper()
+
+    # Check the schema for the endpoint
+    if obj not in dbs.keys():
+        return {"error": f"Endpoint /update/{Object} not found."}
+
+    # Check for required fields
+    if not checkForAttrubutes(keys, dbs[obj]["requiredUpdateFields"]):
+        return {"error": f"{dbs[obj]["requiredUpdateFields"]} are all required to update a(n) {Object}."}
+
+    #Check the schema if the filed is updatable
+    if field not in dbs[obj]["updateFields"]:
+        return {"error": f"/update/{Object}/{Field} is not mutable, or does not exist."}
+
+    #Send data to the DAL
+    return dal.update(obj, field, data)
+
+@app.route("/delete/<Object>", methods=["POST"])
+def delete(Object):
+    # data from the request
+    data, keys = uppercaseDataAndKeys(request.json)
+    obj = Object.upper()
+
+    # Check the schema for the endpoint
+    if obj not in dbs.keys():
+        return {"error": f"Endpoint /delete/{Object} not found."}
+
+    if not checkForAttrubutes(keys, dbs[obj]["requiredDeleteFields"]):
+        return {"error": f"{dbs[obj]["requiredDeleteFields"]} are all required to delete a(n) {Object}."}
+
+    return dal.delete(obj, data)
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
