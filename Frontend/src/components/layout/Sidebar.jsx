@@ -18,6 +18,7 @@ ProjectCard.propTypes = {
         number: PropTypes.string.isRequired,
         name: PropTypes.string.isRequired,
         description: PropTypes.string.isRequired,
+        
     }).isRequired,
 };
 

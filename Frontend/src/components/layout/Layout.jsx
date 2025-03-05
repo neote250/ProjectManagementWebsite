@@ -21,7 +21,13 @@ ProjectCard.propTypes = {
     number: PropTypes.string.isRequired,
     name: PropTypes.string.isRequired,
     description: PropTypes.string.isRequired,
+    hours: PropTypes.string.isRequired,
+    taskDifficulty: PropTypes.string.isRequired,
+    time: PropTypes.int.isRequired,
+    estimatedTime: PropTypes.int.isRequired,
   }).isRequired,
 };
 
+// hours, task, people, task difficulty, time, and estimated time
+//             Check box
 export default ProjectCard;
