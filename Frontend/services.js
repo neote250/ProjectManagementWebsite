@@ -5,10 +5,10 @@ import axios from 'axios';
 // Base URL for the API - can be read from environment variables in production
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/';
 
-// /**
-//  * Fetch all users from the API
-//  * @returns {Promise<Array>} Promise resolving to array of users
-//  */
+/**
+ * Fetch all users from the API
+ * @returns {Promise<Array>} Promise resolving to array of users
+ */
 // export const fetchUsers = async () => {
 //   try {
 //     // Make GET request to the users endpoint
@@ -48,7 +48,7 @@ export const createUser = async (user) => {
 export const updateUser = async (id, user) => {
   try {
     // Make PUT request to update an existing user
-    const response = await axios.put(`${API_URL}/users/${id}`, user);
+    const response = await axios.put(`${API_URL}/update/${id}`, user);
     return response.data;
   } catch (error) {
     console.error('Error updating user:', error);
@@ -64,7 +64,7 @@ export const updateUser = async (id, user) => {
 export const deleteUser = async (id) => {
   try {
     // Make DELETE request to remove an user
-    const response = await axios.delete(`${API_URL}/users/${id}`);
+    const response = await axios.delete(`${API_URL}/delete/${id}`);
     return response.data;
   } catch (error) {
     console.error('Error deleting user:', error);
