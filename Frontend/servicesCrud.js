@@ -27,25 +27,25 @@ class ApiService {
     }
   }
 
-  // /**
-  //  * Fetch all items
-  //  * @param {Number} limit - Optional limit on the number of items to return
-  //  * @returns {Promise} - Promise resolving to array of items
-  //  */
-  // static async getAllItems(limit = 0) {
-  //   try {
-  //     // Build URL with optional limit parameter
-  //     const url = limit > 0 ? `${API_URL}/items?limit=${limit}` : `${API_URL}/items`;
+  /**
+   * Fetch all items
+   * @param {Number} limit - Optional limit on the number of items to return
+   * @returns {Promise} - Promise resolving to array of items
+   */
+  static async getAllUsers(limit = 0) {
+    try {
+      // Build URL with optional limit parameter
+      const url = limit > 0 ? `${API_URL}/users?limit=${limit}` : `${API_URL}/users`;
       
-  //     // Send GET request to fetch items
-  //     const response = await axios.get(url);
+      // Send GET request to fetch items
+      const response = await axios.get(url);
       
-  //     // Parse the response data (Flask returns serialized BSON)
-  //     return JSON.parse(response.data);
-  //   } catch (error) {
-  //     this._handleError(error, 'Error fetching items');
-  //   }
-  // }
+      // Parse the response data (Flask returns serialized BSON)
+      return JSON.parse(response.data);
+    } catch (error) {
+      this._handleError(error, 'Error fetching users');
+    }
+  }
 
   /**
    * Fetch a single user by ID
