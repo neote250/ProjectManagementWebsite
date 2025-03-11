@@ -1,5 +1,6 @@
 import { useState } from "react";
 
+
 const LoginPage = ({ onLogin }) => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -11,6 +12,14 @@ const LoginPage = ({ onLogin }) => {
             onLogin(email);
         }
     };
+
+
+
+
+
+
+
+
 
     return (
         <div className="flex items-center justify-center min-h-screen bg-gray-100">
