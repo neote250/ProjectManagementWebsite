@@ -41,7 +41,7 @@ def create(Object):
     #Send data to the DAL
     return dal.create(obj, data)
 
-@app.route("/get/<Object>", methods=["POST"]) #Done
+@app.route("/get/<Object>", methods=["POST, GET"]) #Done
 def get(Object):
     # data from the request
     data, keys = uppercaseDataAndKeys(request.json)
@@ -57,7 +57,7 @@ def get(Object):
     #Send data to the DAL
     return dal.get(obj, data)
 
-@app.route("/update/<Object>/<Field>", methods=["POST"])
+@app.route("/update/<Object>/<Field>", methods=["POST, PUT"])
 def update(Object, Field):
     # data from the request
     data, keys = uppercaseDataAndKeys(request.json)
@@ -79,7 +79,7 @@ def update(Object, Field):
     #Send data to the DAL
     return dal.update(obj, field, data)
 
-@app.route("/delete/<Object>", methods=["POST"])
+@app.route("/delete/<Object>", methods=["POST, DELETE"])
 def delete(Object):
     # data from the request
     data, keys = uppercaseDataAndKeys(request.json)
