@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Plus, X, Calendar, User, Tag, FileText } from "lucide-react";
 import { useParams } from "react-router-dom"; // Add useParams for dynamic routing
- 
+
 const ProjectDashboard = () => {
   const { projectId } = useParams(); // Get the projectId from the URL
   const [activeCard, setActiveCard] = useState("tasks");
