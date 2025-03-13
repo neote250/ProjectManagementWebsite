@@ -1,9 +1,15 @@
+// vite.config.js
+
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
 export default defineConfig({
   plugins: [react()],
   build: {
-    outDir: 'public, build', // Set the output directory to 'public' for Vercel
+    // Set the build output directory to 'build'
+    outDir: 'build', // Vercel expects the output directory to be 'build'
+    // Public directory configuration
+    assetsDir: 'assets', // You can choose to customize the assets directory
+    emptyOutDir: true, // Clears the output directory before building
   },
 });
