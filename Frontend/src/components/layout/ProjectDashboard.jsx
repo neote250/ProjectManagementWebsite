@@ -1,42 +1,13 @@
-import { useState } from "react";
-import {
-  MessageSquare,
-  Send,
-  Upload,
-  Plus,
-  X,
-  Calendar,
-  Clock,
-  User,
-  Tag,
-  Mail,
-  Phone,
-} from "lucide-react";
+import { useState, useEffect } from "react";
+import { Plus, X, Calendar, User, Tag, FileText } from "lucide-react";
+import { useParams } from "react-router-dom"; // Add useParams for dynamic routing
 
 const ProjectDashboard = () => {
+  const { projectId } = useParams(); // Get the projectId from the URL
   const [activeCard, setActiveCard] = useState("tasks");
   const [newComment, setNewComment] = useState("");
   const [showTaskModal, setShowTaskModal] = useState(false);
-  const [tasks, setTasks] = useState([
-    {
-      id: 1,
-      title: "Design Homepage",
-      completed: false,
-      assignee: "Sarah Johnson",
-      priority: "High",
-      dueDate: "2025-03-20",
-      description: "Create wireframes and mockups for the new homepage",
-    },
-    {
-      id: 2,
-      title: "API Integration",
-      completed: false,
-      assignee: "Mike Chen",
-      priority: "Medium",
-      dueDate: "2025-03-25",
-      description: "Integrate backend API endpoints with frontend components",
-    },
-  ]);
+  const [tasks, setTasks] = useState([]);
   const [newTask, setNewTask] = useState({
     title: "",
     assignee: "",
@@ -45,213 +16,196 @@ const ProjectDashboard = () => {
     description: "",
   });
   const [uploadedFiles, setUploadedFiles] = useState([]);
-  const [comments, setComments] = useState([
-    {
-      id: 1,
-      user: "Sarah Johnson",
-      text: "I've completed the initial design mockups",
-      time: "2:30 PM",
-    },
-    {
-      id: 2,
-      user: "Mike Chen",
-      text: "Looking good! I'll start implementing the front-end tomorrow",
-      time: "3:15 PM",
-    },
-    {
-      id: 3,
-      user: "Lisa Wong",
-      text: "Don't forget we need to discuss the API integration",
-      time: "4:05 PM",
-    },
-  ]);
-
-  const teamMembers = [
-    {
-      id: 1,
-      name: "Sarah Johnson",
-      role: "UI/UX Designer",
-      email: "sarah.j@example.com",
-      phone: "555-123-4567",
-      avatar: "/api/placeholder/40/40",
-      tasks: 3,
-      status: "online",
-    },
-    {
-      id: 2,
-      name: "Mike Chen",
-      role: "Frontend Developer",
-      email: "mike.c@example.com",
-      phone: "555-234-5678",
-      avatar: "/api/placeholder/40/40",
-      tasks: 2,
-      status: "busy",
-    },
-    {
-      id: 3,
-      name: "Lisa Wong",
-      role: "Project Manager",
-      email: "lisa.w@example.com",
-      phone: "555-345-6789",
-      avatar: "/api/placeholder/40/40",
-      tasks: 5,
-      status: "online",
-    },
-    {
-      id: 4,
-      name: "Alex Taylor",
-      role: "Backend Developer",
-      email: "alex.t@example.com",
-      phone: "555-456-7890",
-      avatar: "/api/placeholder/40/40",
-      tasks: 4,
-      status: "offline",
-    },
-    {
-      id: 5,
-      name: "Jordan Smith",
-      role: "QA Engineer",
-      email: "jordan.s@example.com",
-      phone: "555-567-8901",
-      avatar: "/api/placeholder/40/40",
-      tasks: 1,
-      status: "online",
-    },
-  ];
-
+  const [comments, setComments] = useState([]);
+  const [projectData, setProjectData] = useState({});
+  const [timeline, setTimeline] = useState([]); // Add timeline state to track changes
   const priorities = ["Low", "Medium", "High", "Urgent"];
+  const teamMembers = [
+    { id: 1, name: "Bruce Henson" },
+  ]; // Add your team members here
 
   const projectCards = [
     { id: "tasks", title: "Tasks", count: tasks.length },
     { id: "documents", title: "Documents", count: uploadedFiles.length },
-    { id: "timeline", title: "Timeline", count: null },
+    { id: "timeline", title: "Timeline", count: timeline.length },
     { id: "team", title: "Team Members", count: teamMembers.length },
   ];
 
-  // Handle creating a new task
-  const handleCreateTask = () => {
-    if (newTask.title.trim() === "") return;
+  useEffect(() => {
+    const fetchProjectData = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const response = await fetch(`http://localhost:5000/api/projects/${projectId}`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`,
+          },
+        });
 
-    setTasks([
-      ...tasks,
-      {
-        id: tasks.length + 1,
-        title: newTask.title,
-        completed: false,
-        assignee: newTask.assignee,
-        priority: newTask.priority,
-        dueDate: newTask.dueDate,
-        description: newTask.description,
-      },
-    ]);
+        if (!response.ok) {
+          throw new Error("Failed to fetch project data");
+        }
 
-    // Reset form and close modal
-    setNewTask({
-      title: "",
-      assignee: "",
-      priority: "Medium",
-      dueDate: "",
-      description: "",
-    });
-    setShowTaskModal(false);
+        const data = await response.json();
+        setProjectData(data);
+        setTasks(data.tasks || []);
+        setComments(data.comments || []);
+        setUploadedFiles(data.files || []);
+        setTimeline(data.timeline || []); // Fetch timeline data
+      } catch (error) {
+        console.error("Error fetching project data:", error);
+      }
+    };
+
+    fetchProjectData();
+  }, [projectId]);
+
+  // Function to log timeline events
+  const logTimelineEvent = async (eventType, description) => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch(`http://localhost:5000/api/projects/${projectId}/timeline`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
+        body: JSON.stringify({ eventType, description }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to log timeline event");
+      }
+
+      const event = await response.json();
+      setTimeline([event, ...timeline]); // Add the new event to the timeline
+    } catch (error) {
+      console.error("Error logging timeline event:", error);
+    }
   };
 
-  // Handle toggling task completion
-  const handleToggleTask = (taskId) => {
-    setTasks(
-      tasks.map((task) =>
-        task.id === taskId ? { ...task, completed: !task.completed } : task
-      )
-    );
-  };
+  // Handle creating a task
+  const handleCreateTask = async () => {
+    if (newTask.title.trim() === "" || !newTask.assignee || !newTask.dueDate) {
+      alert("Please fill in all required fields.");
+      return;
+    }
 
-  // Handle sending a comment
-  const handleSendComment = () => {
-    if (newComment.trim() === "") return;
-    const currentTime = new Date().toLocaleTimeString([], {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch(`http://localhost:5000/api/projects/${projectId}/tasks`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
+        body: JSON.stringify(newTask),
+      });
 
-    setComments([
-      ...comments,
-      {
-        id: comments.length + 1,
-        user: "You",
-        text: newComment,
-        time: currentTime,
-      },
-    ]);
-    setNewComment("");
+      if (!response.ok) {
+        throw new Error("Failed to create task");
+      }
+
+      const task = await response.json();
+      setTasks([...tasks, task]);
+
+      // Log the task creation in the timeline
+      logTimelineEvent("task_added", `Task "${newTask.title}" was added to the project.`);
+
+      setNewTask({
+        title: "",
+        assignee: "",
+        priority: "Medium",
+        dueDate: "",
+        description: "",
+      });
+      setShowTaskModal(false);
+    } catch (error) {
+      console.error("Error creating task:", error);
+    }
   };
 
   // Handle file upload
-  const handleFileUpload = (event) => {
+  const handleFileUpload = async (event) => {
     const files = event.target.files;
-    const newFiles = [...uploadedFiles];
+    const fileData = new FormData();
 
     for (let file of files) {
-      newFiles.push({
-        name: file.name,
-        size: `${(file.size / 1024).toFixed(2)} KB`,
-        uploadedAt: new Date().toLocaleDateString(),
+      fileData.append("file", file);
+    }
+
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch(`http://localhost:5000/api/projects/${projectId}/upload`, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+        },
+        body: fileData,
       });
-    }
 
-    setUploadedFiles(newFiles);
-  };
+      if (!response.ok) {
+        throw new Error("Failed to upload files");
+      }
 
-  // Handle input change for new task form
-  const handleTaskInputChange = (e) => {
-    const { name, value } = e.target;
-    setNewTask({
-      ...newTask,
-      [name]: value,
-    });
-  };
+      const uploadedFile = await response.json();
+      setUploadedFiles([...uploadedFiles, uploadedFile]);
 
-  // Get status color
-  const getStatusColor = (status) => {
-    switch (status) {
-      case "online":
-        return "bg-green-500";
-      case "busy":
-        return "bg-yellow-500";
-      case "offline":
-        return "bg-gray-400";
-      default:
-        return "bg-gray-400";
+      // Log the document upload in the timeline
+      logTimelineEvent("document_uploaded", `New document uploaded: "${uploadedFile.name}"`);
+    } catch (error) {
+      console.error("Error uploading files:", error);
     }
   };
 
-  // Get assignee tasks count
-  const getAssigneeTasks = (memberName) => {
-    return tasks.filter((task) => task.assignee === memberName).length;
+  // Handle comment submission
+  const handleSendComment = async () => {
+    if (newComment.trim() === "") return;
+
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch(`http://localhost:5000/api/projects/${projectId}/comments`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
+        body: JSON.stringify({ text: newComment }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to send comment");
+      }
+
+      const comment = await response.json();
+      setComments([...comments, comment]);
+
+      // Log the comment posting in the timeline
+      logTimelineEvent("comment_added", `New comment posted: "${newComment}"`);
+
+      setNewComment("");
+    } catch (error) {
+      console.error("Error sending comment:", error);
+    }
   };
 
   return (
     <div className="flex h-screen bg-gray-100">
       {/* Sidebar */}
       <div className="w-64 bg-gray-50 border-r border-gray-200 overflow-y-auto p-4">
-        <h2 className="text-lg font-semibold text-gray-700 mb-4">
-          Project Views
-        </h2>
+        <h2 className="text-lg font-semibold text-gray-700 mb-4">Project Views</h2>
         {projectCards.map((card) => (
           <div
             key={card.id}
-            className={`p-3 mb-2 rounded-lg cursor-pointer flex justify-between items-center ${
-              activeCard === card.id
-                ? "bg-blue-100 border-l-4 border-blue-500"
-                : "hover:bg-gray-200"
-            }`}
+            className={`p-3 mb-2 rounded-lg cursor-pointer flex justify-between items-center ${activeCard === card.id
+              ? "bg-blue-100 border-l-4 border-blue-500"
+              : "hover:bg-gray-200"
+              }`}
             onClick={() => setActiveCard(card.id)}
           >
             <span
-              className={
-                activeCard === card.id
-                  ? "text-blue-700 font-medium"
-                  : "text-gray-700"
-              }
+              className={activeCard === card.id ? "text-blue-700 font-medium" : "text-gray-700"}
             >
               {card.title}
             </span>
@@ -262,12 +216,11 @@ const ProjectDashboard = () => {
             )}
           </div>
         ))}
-        {/* Back to Home Button */}
         <button
-          onClick={() => (window.location.href = "/")}
+          onClick={() => (window.location.href = "/projects")}
           className="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 w-full mt-4"
         >
-          Back to Home
+          Log Out
         </button>
       </div>
 
@@ -292,16 +245,13 @@ const ProjectDashboard = () => {
                 {tasks.map((task) => (
                   <li
                     key={task.id}
-                    className={`p-4 rounded-md ${
-                      task.completed ? "bg-green-100" : "bg-white"
-                    } border shadow-sm`}
+                    className={`p-4 rounded-md ${task.completed ? "bg-green-100" : "bg-white"
+                      } border shadow-sm`}
                   >
                     <div className="flex justify-between items-start">
                       <div className={task.completed ? "line-through" : ""}>
                         <h3 className="font-medium text-lg">{task.title}</h3>
-                        <p className="text-sm text-gray-600 mt-1">
-                          {task.description}
-                        </p>
+                        <p className="text-sm text-gray-600 mt-1">{task.description}</p>
                       </div>
                       <button
                         onClick={() => handleToggleTask(task.id)}
@@ -319,15 +269,14 @@ const ProjectDashboard = () => {
                       )}
                       {task.priority && (
                         <div
-                          className={`flex items-center text-xs rounded-full px-3 py-1 ${
-                            task.priority === "High"
-                              ? "bg-red-100 text-red-700"
-                              : task.priority === "Medium"
+                          className={`flex items-center text-xs rounded-full px-3 py-1 ${task.priority === "High"
+                            ? "bg-red-100 text-red-700"
+                            : task.priority === "Medium"
                               ? "bg-yellow-100 text-yellow-700"
                               : task.priority === "Urgent"
-                              ? "bg-purple-100 text-purple-700"
-                              : "bg-green-100 text-green-700"
-                          }`}
+                                ? "bg-purple-100 text-purple-700"
+                                : "bg-green-100 text-green-700"
+                            }`}
                         >
                           <Tag size={12} className="mr-1" />
                           {task.priority}
@@ -348,130 +297,24 @@ const ProjectDashboard = () => {
 
           {/* Documents Section */}
           {activeCard === "documents" && (
-            <div className="space-y-4">
+            <div>
+              <h2 className="text-xl font-semibold">Upload Files</h2>
               <input
                 type="file"
                 multiple
                 onChange={handleFileUpload}
                 className="mb-4 p-2 border border-gray-300 rounded-md cursor-pointer"
               />
-              <div className="space-y-2">
-                {uploadedFiles.length === 0 ? (
-                  <p className="text-gray-500">No documents uploaded yet.</p>
-                ) : (
-                  uploadedFiles.map((file, index) => (
-                    <div
-                      key={index}
-                      className="bg-white p-3 rounded-md shadow flex justify-between"
-                    >
-                      <div>
-                        <h3 className="text-lg font-medium">{file.name}</h3>
-                        <p className="text-sm text-gray-600">
-                          Size: {file.size}
-                        </p>
-                        <p className="text-xs text-gray-400">
-                          Uploaded: {file.uploadedAt}
-                        </p>
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Team Members Section */}
-          {activeCard === "team" && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {teamMembers.map((member) => (
-                  <div
-                    key={member.id}
-                    className="bg-white rounded-lg shadow-sm p-4 border"
-                  >
-                    <div className="flex items-start">
-                      <div className="relative mr-3">
-                        <img
-                          src={member.avatar}
-                          alt={member.name}
-                          className="w-12 h-12 rounded-full"
-                        />
-                        <span
-                          className={`absolute bottom-0 right-0 w-3 h-3 rounded-full ${getStatusColor(
-                            member.status
-                          )} border-2 border-white`}
-                        ></span>
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <h3 className="font-medium text-lg">
-                              {member.name}
-                            </h3>
-                            <p className="text-sm text-gray-600">
-                              {member.role}
-                            </p>
-                          </div>
-                          <div className="flex gap-2">
-                            <span className="inline-flex items-center bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded-full">
-                              {getAssigneeTasks(member.name)} tasks
-                            </span>
-                          </div>
-                        </div>
-                        <div className="mt-3">
-                          <div className="flex items-center text-sm text-gray-600 mb-1">
-                            <Mail size={14} className="mr-2" />
-                            {member.email}
-                          </div>
-                          <div className="flex items-center text-sm text-gray-600">
-                            <Phone size={14} className="mr-2" />
-                            {member.phone}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+              <ul className="space-y-2">
+                {uploadedFiles.map((file, index) => (
+                  <li key={index} className="flex justify-between items-center p-3 bg-gray-100 rounded-md">
+                    <span>{file.name}</span>
+                    <a href={file.url} className="text-blue-600">Download</a>
+                  </li>
                 ))}
-              </div>
+              </ul>
             </div>
           )}
-        </div>
-
-        {/* Comment Section Always Visible */}
-        <div className="w-96 bg-white border-l border-gray-200 flex flex-col">
-          <div className="px-4 py-3 bg-gray-100 border-b flex justify-between items-center">
-            <span className="font-medium">Comments</span>
-            <span className="text-xs text-gray-500">
-              {comments.length} comments
-            </span>
-          </div>
-          <div className="flex-1 overflow-y-auto p-4">
-            {comments.map((comment) => (
-              <div key={comment.id} className="bg-gray-50 rounded-lg p-3 mb-2">
-                <div className="flex justify-between items-center mb-2">
-                  <span className="font-medium">{comment.user}</span>
-                  <span className="text-xs text-gray-500">{comment.time}</span>
-                </div>
-                <p className="text-sm text-gray-700">{comment.text}</p>
-              </div>
-            ))}
-          </div>
-          <div className="border-t border-blue-200 p-3 flex items-center">
-            <input
-              type="text"
-              placeholder="Write a comment..."
-              className="flex-1 mr-2 p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-              value={newComment}
-              onChange={(e) => setNewComment(e.target.value)}
-              onKeyPress={(e) => e.key === "Enter" && handleSendComment()}
-            />
-            <button
-              onClick={handleSendComment}
-              className="bg-blue-500 text-white p-2 rounded-full hover:bg-blue-600"
-            >
-              <Send size={20} />
-            </button>
-          </div>
         </div>
       </div>
 
@@ -491,42 +334,32 @@ const ProjectDashboard = () => {
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Task Title *
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Task Title *</label>
                 <input
                   type="text"
                   name="title"
                   value={newTask.title}
-                  onChange={handleTaskInputChange}
-                  placeholder="Enter task title"
-                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+                  onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
+                  className="w-full p-2 border border-gray-300 rounded-md"
                   required
                 />
               </div>
-
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Description
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
                 <textarea
                   name="description"
                   value={newTask.description}
-                  onChange={handleTaskInputChange}
-                  placeholder="Enter task description"
-                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 h-24"
+                  onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
+                  className="w-full p-2 border border-gray-300 rounded-md h-24"
                 />
               </div>
-
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Assignee
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Assignee</label>
                 <select
                   name="assignee"
                   value={newTask.assignee}
-                  onChange={handleTaskInputChange}
-                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+                  onChange={(e) => setNewTask({ ...newTask, assignee: e.target.value })}
+                  className="w-full p-2 border border-gray-300 rounded-md"
                 >
                   <option value="">Select team member</option>
                   {teamMembers.map((member) => (
@@ -536,16 +369,13 @@ const ProjectDashboard = () => {
                   ))}
                 </select>
               </div>
-
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Priority
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Priority</label>
                 <select
                   name="priority"
                   value={newTask.priority}
-                  onChange={handleTaskInputChange}
-                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+                  onChange={(e) => setNewTask({ ...newTask, priority: e.target.value })}
+                  className="w-full p-2 border border-gray-300 rounded-md"
                 >
                   {priorities.map((priority) => (
                     <option key={priority} value={priority}>
@@ -554,17 +384,14 @@ const ProjectDashboard = () => {
                   ))}
                 </select>
               </div>
-
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Due Date
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Due Date</label>
                 <input
                   type="date"
                   name="dueDate"
                   value={newTask.dueDate}
-                  onChange={handleTaskInputChange}
-                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+                  onChange={(e) => setNewTask({ ...newTask, dueDate: e.target.value })}
+                  className="w-full p-2 border border-gray-300 rounded-md"
                 />
               </div>
 
@@ -578,11 +405,7 @@ const ProjectDashboard = () => {
                 <button
                   onClick={handleCreateTask}
                   disabled={!newTask.title.trim()}
-                  className={`px-4 py-2 bg-blue-500 text-white rounded-md ${
-                    newTask.title.trim()
-                      ? "hover:bg-blue-600"
-                      : "opacity-50 cursor-not-allowed"
-                  }`}
+                  className={`px-4 py-2 bg-blue-500 text-white rounded-md ${newTask.title.trim() ? "hover:bg-blue-600" : "opacity-50 cursor-not-allowed"}`}
                 >
                   Create Task
                 </button>

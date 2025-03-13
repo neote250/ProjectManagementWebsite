@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { LayoutGrid, List, PlusCircle, Loader } from "lucide-react";
-import { useNavigate } from "react-router-dom"; // Import navigate hook
 
 const ProjectList = ({ user }) => {
   const [projects, setProjects] = useState([]); // State to store projects
@@ -14,8 +13,6 @@ const ProjectList = ({ user }) => {
     taskDifficulty: 1,
     estimatedTime: 0,
   });
-
-  const navigate = useNavigate(); // Initialize the useNavigate hook
 
   // Fetch projects when user is logged in
   useEffect(() => {
@@ -35,7 +32,7 @@ const ProjectList = ({ user }) => {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`, // Pass token in Authorization header
+          Authorization: `Bearer ${token}`, // Include token in the Authorization header
         },
       });
 
@@ -98,11 +95,6 @@ const ProjectList = ({ user }) => {
     } catch (error) {
       setError(error.message);
     }
-  };
-
-  // Navigate to the ProjectDashboard and pass the selected project
-  const handleProjectClick = (project) => {
-    navigate(`/projects/${project._id}`, { state: { project } }); // Pass project details to the route
   };
 
   if (loading) {
@@ -208,11 +200,7 @@ const ProjectList = ({ user }) => {
 
       {/* Project List */}
       <div
-        className={
-          isGridView
-            ? "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
-            : "space-y-4"
-        }
+        className={isGridView ? "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6" : "space-y-4"}
       >
         {projects.length === 0 ? (
           <p className="col-span-full text-center text-gray-500 py-8">
@@ -222,7 +210,7 @@ const ProjectList = ({ user }) => {
           projects.map((project) => (
             <div
               key={project._id}
-              onClick={() => handleProjectClick(project)} // Call handleProjectClick when a project is clicked
+              onClick={() => console.log(project)} // Handle selection of a project
               className={`border border-gray-300 bg-white rounded-lg p-5 shadow-md hover:shadow-lg transition-shadow cursor-pointer ${isGridView ? "" : "flex items-center space-x-4"}`}
             >
               <h2 className="text-xl font-bold">{project.name}</h2>
