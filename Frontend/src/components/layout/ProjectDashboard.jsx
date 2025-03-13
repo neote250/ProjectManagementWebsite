@@ -239,11 +239,10 @@ const ProjectDashboard = () => {
         {projectCards.map((card) => (
           <div
             key={card.id}
-            className={`p-3 mb-2 rounded-lg cursor-pointer flex justify-between items-center ${
-              activeCard === card.id
+            className={`p-3 mb-2 rounded-lg cursor-pointer flex justify-between items-center ${activeCard === card.id
                 ? "bg-blue-100 border-l-4 border-blue-500"
                 : "hover:bg-gray-200"
-            }`}
+              }`}
             onClick={() => setActiveCard(card.id)}
           >
             <span
@@ -292,9 +291,8 @@ const ProjectDashboard = () => {
                 {tasks.map((task) => (
                   <li
                     key={task.id}
-                    className={`p-4 rounded-md ${
-                      task.completed ? "bg-green-100" : "bg-white"
-                    } border shadow-sm`}
+                    className={`p-4 rounded-md ${task.completed ? "bg-green-100" : "bg-white"
+                      } border shadow-sm`}
                   >
                     <div className="flex justify-between items-start">
                       <div className={task.completed ? "line-through" : ""}>
@@ -319,15 +317,14 @@ const ProjectDashboard = () => {
                       )}
                       {task.priority && (
                         <div
-                          className={`flex items-center text-xs rounded-full px-3 py-1 ${
-                            task.priority === "High"
+                          className={`flex items-center text-xs rounded-full px-3 py-1 ${task.priority === "High"
                               ? "bg-red-100 text-red-700"
                               : task.priority === "Medium"
-                              ? "bg-yellow-100 text-yellow-700"
-                              : task.priority === "Urgent"
-                              ? "bg-purple-100 text-purple-700"
-                              : "bg-green-100 text-green-700"
-                          }`}
+                                ? "bg-yellow-100 text-yellow-700"
+                                : task.priority === "Urgent"
+                                  ? "bg-purple-100 text-purple-700"
+                                  : "bg-green-100 text-green-700"
+                            }`}
                         >
                           <Tag size={12} className="mr-1" />
                           {task.priority}
@@ -456,7 +453,7 @@ const ProjectDashboard = () => {
               </div>
             ))}
           </div>
-          <div className="border-t border-blue-200 p-3 flex items-center">
+          <div className="border-t border-blue-200 p-3 flex items-center padding-bottom-25px">
             <input
               type="text"
               placeholder="Write a comment..."
@@ -578,11 +575,10 @@ const ProjectDashboard = () => {
                 <button
                   onClick={handleCreateTask}
                   disabled={!newTask.title.trim()}
-                  className={`px-4 py-2 bg-blue-500 text-white rounded-md ${
-                    newTask.title.trim()
+                  className={`px-4 py-2 bg-blue-500 text-white rounded-md ${newTask.title.trim()
                       ? "hover:bg-blue-600"
                       : "opacity-50 cursor-not-allowed"
-                  }`}
+                    }`}
                 >
                   Create Task
                 </button>

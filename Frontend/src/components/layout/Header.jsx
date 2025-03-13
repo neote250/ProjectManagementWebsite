@@ -8,7 +8,7 @@ const Header = ({ variant }) => {
     const [showNotifications, setShowNotifications] = useState(false);
     const [showAllNotifications, setShowAllNotifications] = useState(false);
     const [user, setUser] = useState(null);
-    
+
     // Sample notifications data - in a real app, this would come from an API or props
     const [notifications, setNotifications] = useState([
         {
@@ -75,7 +75,7 @@ const Header = ({ variant }) => {
     };
 
     const markAsRead = (id) => {
-        setNotifications(notifications.map(notification => 
+        setNotifications(notifications.map(notification =>
             notification.id === id ? { ...notification, read: true } : notification
         ));
     };
@@ -83,7 +83,7 @@ const Header = ({ variant }) => {
     const markAllAsRead = () => {
         setNotifications(notifications.map(notification => ({ ...notification, read: true })));
     };
-    
+
     const unreadCount = notifications.filter(notification => !notification.read).length;
 
     const headerStyles =
@@ -98,8 +98,8 @@ const Header = ({ variant }) => {
                     <div className="text-xl font-bold">ProjectHub</div>
                     <div className="flex items-center gap-4">
                         <div className="relative">
-                            <Bell 
-                                className="w-5 h-5 cursor-pointer hover:text-gray-400" 
+                            <Bell
+                                className="w-5 h-5 cursor-pointer hover:text-gray-400"
                                 onClick={toggleNotifications}
                             />
                             {unreadCount > 0 && (
@@ -107,28 +107,28 @@ const Header = ({ variant }) => {
                                     {unreadCount}
                                 </span>
                             )}
-                            
+
                             {showNotifications && (
                                 <div className="absolute right-0 mt-2 w-80 bg-white border border-gray-200 rounded-md shadow-lg z-50">
                                     <div className="p-3 border-b flex justify-between items-center">
                                         <h3 className="font-semibold text-gray-800">Notifications</h3>
                                         <div className="flex items-center gap-2">
-                                            <button 
+                                            <button
                                                 onClick={markAllAsRead}
                                                 className="text-xs text-blue-600 hover:text-blue-800"
                                             >
                                                 Mark all as read
                                             </button>
-                                            <X 
-                                                className="w-4 h-4 cursor-pointer text-gray-500 hover:text-gray-700" 
+                                            <X
+                                                className="w-4 h-4 cursor-pointer text-gray-500 hover:text-gray-700"
                                                 onClick={toggleNotifications}
                                             />
                                         </div>
                                     </div>
-                                    
+
                                     <div className="max-h-96 overflow-y-auto">
                                         {notifications.slice(0, 3).map((notification) => (
-                                            <div 
+                                            <div
                                                 key={notification.id}
                                                 className={`p-3 border-b hover:bg-gray-50 cursor-pointer ${notification.read ? 'opacity-70' : 'bg-blue-50'}`}
                                                 onClick={() => markAsRead(notification.id)}
@@ -141,9 +141,9 @@ const Header = ({ variant }) => {
                                             </div>
                                         ))}
                                     </div>
-                                    
+
                                     <div className="p-2 text-center border-t">
-                                        <button 
+                                        <button
                                             className="text-sm text-blue-600 hover:text-blue-800"
                                             onClick={openAllNotifications}
                                         >
@@ -153,11 +153,11 @@ const Header = ({ variant }) => {
                                 </div>
                             )}
                         </div>
-                        
+
                         {user ? (
                             <span className="text-sm font-semibold">{user}</span>
                         ) : (
-                            <User 
+                            <User
                                 className="w-5 h-5 cursor-pointer hover:text-gray-400"
                                 onClick={() => setShowLogin(true)}
                             />
@@ -172,7 +172,7 @@ const Header = ({ variant }) => {
                     <div className="max-w-4xl mx-auto px-4 py-6">
                         <div className="flex items-center justify-between mb-6">
                             <div className="flex items-center gap-3">
-                                <button 
+                                <button
                                     onClick={closeAllNotifications}
                                     className="p-2 rounded-full hover:bg-gray-100"
                                 >
@@ -180,7 +180,7 @@ const Header = ({ variant }) => {
                                 </button>
                                 <h1 className="text-2xl font-bold">All Notifications</h1>
                             </div>
-                            <button 
+                            <button
                                 onClick={markAllAsRead}
                                 className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800"
                             >
@@ -197,7 +197,7 @@ const Header = ({ variant }) => {
                             {unreadCount > 0 ? (
                                 <div className="space-y-2">
                                     {notifications.filter(n => !n.read).map((notification) => (
-                                        <div 
+                                        <div
                                             key={notification.id}
                                             className="p-4 bg-blue-50 rounded-lg border border-blue-100 hover:bg-blue-100 cursor-pointer"
                                             onClick={() => markAsRead(notification.id)}
@@ -222,7 +222,7 @@ const Header = ({ variant }) => {
                             </div>
                             <div className="space-y-2">
                                 {notifications.filter(n => n.read).map((notification) => (
-                                    <div 
+                                    <div
                                         key={notification.id}
                                         className="p-4 bg-white rounded-lg border border-gray-200 hover:bg-gray-50"
                                     >
