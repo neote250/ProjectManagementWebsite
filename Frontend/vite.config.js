@@ -4,6 +4,6 @@ import react from '@vitejs/plugin-react';
 export default defineConfig({
   plugins: [react()],
   build: {
-    outDir: 'public', // Set the output directory to 'public' for Vercel
+    outDir: 'public, build', // Set the output directory to 'public' for Vercel
   },
 });
