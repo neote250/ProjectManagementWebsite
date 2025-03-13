@@ -54,7 +54,6 @@ const ProjectList = ({ user }) => {
     }
   };
 
-
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setNewProject({ ...newProject, [name]: value });
