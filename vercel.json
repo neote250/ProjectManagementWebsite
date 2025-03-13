@@ -16,7 +16,7 @@
     "routes": [
         {
             "src": "/(.*)",
-            "dest": "Frontend/build/$1"
+            "dest": "Frontend/src/$1"
         },
         {
             "src": "/api/(.*)",
