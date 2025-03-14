@@ -3,7 +3,7 @@
     "builds": [
         {
             "src": "Frontend/package.json",
-            "use": "@vercel/webpack",
+            "use": "@vercel/vite",
             "config": {
                 "distDir": "dist"
             }
@@ -22,6 +22,5 @@
             "src": "/api/(.*)",
             "dest": "Backend2/Server.js"
         }
-    ],
-    "outputDirectory": "Frontend/dist"
+    ]
 }
