@@ -7,7 +7,7 @@ export default defineConfig({
   plugins: [react()],
   build: {
     // Set the build output directory to 'build'
-    outDir: 'build', // Vercel expects the output directory to be 'build'
+    outDir: 'dist', // Vercel expects the output directory to be 'build'
     // Public directory configuration
     assetsDir: 'assets', // You can choose to customize the assets directory
     emptyOutDir: true, // Clears the output directory before building
