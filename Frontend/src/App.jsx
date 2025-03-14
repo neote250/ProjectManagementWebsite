@@ -19,7 +19,7 @@ const App = () => {
   }, []);
 
   const fetchUserData = async (token) => {
-    const response = await fetch("http://localhost:5000/api/user", {
+    const response = await fetch("https://projectmanagement-brucewayne52411s-projects.vercel.app/", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
