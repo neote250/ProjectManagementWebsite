@@ -19,7 +19,7 @@ const App = () => {
   }, []);
 
   const fetchUserData = async (token) => {
-    const response = await fetch("https://projectmanagement-brucewayne52411s-projects.vercel.app/", {
+    const response = await fetch("https://projectmanagement-hd69jgwfu-brucewayne52411s-projects.vercel.app/test", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -53,6 +53,7 @@ const App = () => {
               <Route path="/login" element={<LoginPage onLogin={handleLogin} />} />
               <Route path="/projects" element={user ? <ProjectList user={user} /> : <Navigate to="/login" />} />
               <Route path="/projects/:projectId" element={<ProjectDashboard />} />
+              <Route path="/test" element={<div>Test Page: The app is working!</div>} />  {/* Test Route */}
               <Route path="*" element={<Navigate to="/login" />} />
             </Routes>
           </main>
